@@ -76,4 +76,5 @@ DISTRICTS_MAP = {
   'north-sheen': 'REGION%5E85411',
   'haggerston': 'REGION%5E85390',
   'farringdon': 'STATION%5E3431',
+  'isle-of-dogs': 'REGION%5E85364',
 }

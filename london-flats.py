@@ -5,6 +5,8 @@ from telegramBot import sendFlat, logStatus
 from datetime import datetime
 from utils import getChats, getChatParams, calculateHash
 
+not_found = []
+
 
 def runSearch(chatId, params):
   flatType = params[Params.FLAT_TYPE]
@@ -19,7 +21,6 @@ def runSearch(chatId, params):
 
   print(chatId, flatType, minBeds, minPrice, maxPrice, districts, filters)
 
-  not_found = []
   flatHashes = {}
   for district in districts:
     code = DISTRICTS_MAP.get(district, None)
@@ -66,11 +67,8 @@ def runSearch(chatId, params):
       sendFlat(district, zooplaFlat, chatId)
       REDIS_CLIENT.set(redisKey, 1)
       zooplaNew += 1
-    print('[{}] zoopla, {}, new: {}/{}, same: {}'.format(chatId, district, zooplaNew,
-                                               len(zooplaFlats), same))
-
-  if not_found:
-    print('[ERROR] No districts for rightmove: {}'.format(','.join(not_found)))
+    print('[{}] zoopla, {}, new: {}/{}, same: {}'.format(
+      chatId, district, zooplaNew, len(zooplaFlats), same))
 
 
 date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -85,5 +83,11 @@ for chat_id in chats:
   except Exception as e:
     print(str(e))
     logStatus('[ERROR] {}, {}'.format(chat_id, str(e)))
+
+if not_found:
+  not_found = list(set(not_found))
+  print('[ERROR] No districts for rightmove: {}'.format(','.join(not_found)))
+  logStatus('[ERROR] No districts for rightmove: {}'.format(
+    ','.join(not_found)))
 
 print('[END]')
