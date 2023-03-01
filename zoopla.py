@@ -43,7 +43,7 @@ def getZooplaFlats(flatType,
 
   flats = {}
   # print(len(response['listing']))
-  for listing in response['listing']:
+  for listing in response.get('listing', []):
     url = listing['details_url'].split('?')[0]
     title = listing['title']
     price = '£' + listing[
