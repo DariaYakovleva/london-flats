@@ -69,4 +69,11 @@ DISTRICTS_MAP = {
   'bloomsbury': 'REGION%5E87494',
   'nw5': 'OUTCODE%5E1861',
   'kilburn': 'REGION%5E85233',
+  'nw': 'REGION%5E93961',
+  'herne-hill': 'REGION%5E85409',
+  'richmond': 'STATION%5E7703',
+  'fulham': 'REGION%5E87507',
+  'north-sheen': 'REGION%5E85411',
+  'haggerston': 'REGION%5E85390',
+  'farringdon': 'STATION%5E3431',
 }

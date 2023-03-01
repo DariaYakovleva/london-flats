@@ -50,10 +50,12 @@ def runSearch(chatId, params):
     zooplaFlats = getZooplaFlats(flatType, district, minBeds, maxPrice,
                                  minPrice)
     zooplaNew = 0
+    same = 0
     for flatLink, zooplaFlat in zooplaFlats.items():
       # print(flatLink, redis_client.get(flatLink))
       if flatHashes.get(calculateHash(zooplaFlat), 0):
         # print('SAME FLAT FOUND', zooplaFlat)
+        same += 1
         continue
       redisKey = '{}_{}'.format(chatId, flatLink)
       if (REDIS_CLIENT.get(redisKey) != None):
@@ -64,8 +66,8 @@ def runSearch(chatId, params):
       sendFlat(district, zooplaFlat, chatId)
       REDIS_CLIENT.set(redisKey, 1)
       zooplaNew += 1
-    print('[{}] zoopla, {}, new: {}/{}'.format(chatId, district, zooplaNew,
-                                               len(zooplaFlats)))
+    print('[{}] zoopla, {}, new: {}/{}, same: {}'.format(chatId, district, zooplaNew,
+                                               len(zooplaFlats), same))
 
   if not_found:
     print('[ERROR] No districts for rightmove: {}'.format(','.join(not_found)))
