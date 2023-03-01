@@ -1,76 +1,71 @@
+from datetime import datetime, timedelta
+import requests
 
-def getZooplaFlats(flatType, district, minBeds, maxPrice, minPrice=0, additional_params={}):
-  ZOOPLA = 'https://www.zoopla.co.uk'
-  urlDistrict = 'london/' + district if district in ['kensington', 'paddington'] else district
-  query = '/{}/property/{}?beds_min={}&price_frequency=per_month&price_max={}&price_min={}&results_sort=newest_listings&q={}&search_source=to-rent&added=24_hours&include_shared_accommodation=false'
-  url = ZOOPLA + query.format(flatType, urlDistrict, minBeds, maxPrice, minPrice, district)
-  # print(url)
-  r = requests.get(url)
-  soup = BeautifulSoup(r.text, 'html.parser')
-
-  flats = []
-  for res in soup.find_all('div'):
-    if res.get('data-testid', '').startswith('search-result_listing') or res.get('data-testid', '').startswith('regular-listings'):
-      for res2 in res.find_all('div'):
-        if res2.get('data-testid', '').startswith('extended-results-banner') \
-          or 'No more exact results' in res2.text or 'No exact results found' in res2.text:
-          break
-        for link in res2.find_all('a'):
-          flatLink = link.get('href')
-          if 'search_identifier' in flatLink:
-            flatLink = ZOOPLA + flatLink[0:flatLink.find('?') - 1]
-            flats.append(flatLink)
-
-  return list(set(flats))
+# https://developer.zoopla.co.uk/apps/myapps
 
 
-def parseZooplaFlat(url):
-  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-  r = requests.get(url)
-  soup = BeautifulSoup(r.text, 'html.parser')
-  
-  title = soup.title.string
-  price = 0
-  address = ''
-  availability = ''
-  floorPlanLink = ''
-  photo = ''
-  tenure = ''
-  propertyType = ''
+def getZooplaFlats(flatType,
+                   district,
+                   minBeds,
+                   maxPrice,
+                   minPrice=0,
+                   additional_params={}):
+  urlDistrict = 'london/' + district if district in [
+    'kensington', 'paddington'
+  ] else district
+  url = "https://zoopla.p.rapidapi.com/properties/list"
+  createdSince = datetime.now() - timedelta(days=1)
 
-  for tag in soup.find_all('p'):
-    if (tag.get('data-testid', '') == 'price'):
-      price = tag.string
-    if (tag.get('data-testid', '') == 'availability'):
-      availability = tag.string
-  for tag in soup.find_all('address'):
-    if (tag.get('data-testid', '') == 'address-label'):
-      address = tag.string
-  for tag in soup.find_all('div'):
-    if (tag.get('data-testid', '').find('floorplan') != -1):
-      floorPlanLink = tag.find('img').get('src')
-    if tag.text in ['Freehold', 'Leasehold', 'Share of freehold']:
-      tenure = tag.string.lower()
-  for tag in soup.find_all('img'):
-    if (tag.get('alt', '').find('Property photo') != -1):
-      photo = tag.get('src')
+  params = {
+    "area": urlDistrict,
+    "category": "residential",
+    "created_since": createdSince.strftime("%Y-%m-%d %H:%M:%S"),
+    "listing_status": flatType.split('-')[1],
+    "minimum_beds": minBeds,
+    "maximum_price": maxPrice,
+    "minimum_price": minPrice,
+    "include_retirement_homes": "no",
+    "include_shared_accommodation": "no",
+    "include_shared_ownership": "no",
+    "order_by": "age",
+    "ordering": "descending",
+    "page_number": "1",
+    "page_size": "40"
+  }
 
-  postcode = address.replace(',', '').split(' ')[-1]
-  stats = 'https://crystalroof.co.uk/postcodes/{}'.format(postcode)
+  headers = {
+    "X-RapidAPI-Key": "fed0b22f70msh5982570f82fb94cp1f1afejsn29b67d7e8a01",
+    "X-RapidAPI-Host": "zoopla.p.rapidapi.com"
+  }
 
-  # TODO fix me
-  if title.find('terraced') != -1:
-    propertyType = 'terraced'
+  response = requests.request("GET", url, headers=headers,
+                              params=params).json()
 
-  return {
+  flats = {}
+  # print(len(response['listing']))
+  for listing in response['listing']:
+    url = listing['details_url'].split('?')[0]
+    title = listing['title']
+    price = '£' + listing[
+      'price'] if flatType == 'for-sale' else '£{} pcm'.format(
+        listing['rental_prices']['per_month'])
+    address = listing.get('displayable_address', '')
+    availability = listing.get('available_from_display', '')
+    floorPlanLink = listing['floor_plan'][0] if 'floor_plan' in listing else ''
+    photo = listing['image_url']
+    tenure = ''
+    propertyType = 'terraced' if title.find('terraced') != -1 else ''
+    flats[url] = {
       'Title': title,
       'Price': price,
       'Address': address,
       'Availability': availability,
       'Link': url,
-      # 'Stats': stats,
       'Photo': photo,
       'FloorPlanLink': floorPlanLink,
       'PropertyType': propertyType,
       'Tenure': tenure,
-  }
+    }
+    # print(flats[url])
+
+  return flats
