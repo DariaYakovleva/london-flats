@@ -153,4 +153,4 @@ conv_handler = ConversationHandler(
 application.add_handler(conv_handler)
 application.add_error_handler(error)
 
-application.run_polling(pool_interval=2.0)
+application.run_polling()
