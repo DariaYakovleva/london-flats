@@ -125,13 +125,13 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  update_str = str(update.to_dict()) if isinstance(update,
-                                                   Update) else str(update)
+  # update_str = str(update.to_dict()) if isinstance(update,
+  #                                                  Update) else str(update)
   print(context.chat_data(), context.user_data(), context.error)
-  await logStatus(
-    context, '[ERROR] {}: {}, {}, {}'.format(update_str, context.error,
-                                             str(context.chat_data()),
-                                             str(context.user_data())))
+  # await logStatus(
+  #   context, '[ERROR] {}: {}, {}, {}'.format(update_str, context.error,
+  #                                            str(context.chat_data()),
+  #                                            str(context.user_data())))
 
 
 application = Application.builder().token(TOKEN).build()
