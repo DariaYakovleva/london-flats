@@ -84,10 +84,13 @@ for chat_id in chats:
     print(str(e))
     logStatus('[ERROR] {}, {}'.format(chat_id, str(e)))
 
-if not_found:
+district_key = 'district'
+log_district = REDIS_CLIENT.get(district_key)
+if not_found and log_district == None:
   not_found = list(set(not_found))
   print('[ERROR] No districts for rightmove: {}'.format(','.join(not_found)))
   logStatus('[ERROR] No districts for rightmove: {}'.format(
     ','.join(not_found)))
+  REDIS_CLIENT.set(district_key, 1, ex=60*60*24*4)
 
 print('[END]')
