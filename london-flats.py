@@ -31,8 +31,8 @@ def runSearch(chatId, params):
     rightMoveNew = 0
     for flatLink in rightMoveFlats:
       redisKey = '{}_{}'.format(chatId, flatLink)
-      # if (REDIS_CLIENT.get(redisKey) != None):
-      #   continue
+      if (REDIS_CLIENT.get(redisKey) != None):
+        continue
       rightMoveFlat = parseRightMoveFlat(flatLink)
       if filters and (rightMoveFlat['Tenure'] not in filters
                       or rightMoveFlat['PropertyType'] not in filters):
@@ -56,8 +56,8 @@ def runSearch(chatId, params):
         # print('SAME FLAT FOUND', zooplaFlat)
         continue
       redisKey = '{}_{}'.format(chatId, flatLink)
-      # if (REDIS_CLIENT.get(redisKey) != None):
-      #   continue
+      if (REDIS_CLIENT.get(redisKey) != None):
+        continue
       if filters and (zooplaFlat['Tenure'] not in filters
                       or zooplaFlat['PropertyType'] not in filters):
         continue
@@ -74,14 +74,14 @@ def runSearch(chatId, params):
 date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 print('[START]', date)
 
-chats = [-848522648]  #getChats()
+chats = getChats()
 print('[CHATS]', chats)
 for chat_id in chats:
   params = getChatParams(chat_id)
-  # try:
-  runSearch(chat_id, params)
-  # except Exception as e:
-  #   print(str(e))
-  #   logStatus('[ERROR] {}, {}'.format(chat_id, str(e)))
+  try:
+    runSearch(chat_id, params)
+  except Exception as e:
+    print(str(e))
+    logStatus('[ERROR] {}, {}'.format(chat_id, str(e)))
 
 print('[END]')
